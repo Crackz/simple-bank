@@ -10,5 +10,7 @@ migratedown:
 	migrate --path db/migrations --database "postgresql://root:secret@localhost:5432/bank?sslmode=disable" --verbose down 
 sqlc:
 	sqlc generate
+test:
+	go test --v --cover ./...
 
-
+.PHONY: test sqlc

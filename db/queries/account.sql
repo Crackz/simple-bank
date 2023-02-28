@@ -18,7 +18,7 @@ INSERT INTO accounts (
 
 -- name: UpdateAccount :one
 UPDATE accounts
-  set balance = $2
+SET balance = $2
 WHERE id = $1
 RETURNING *;
 

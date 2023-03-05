@@ -5,13 +5,13 @@ import (
 	"errors"
 	"net/http"
 
-	db "github.com/crackz/simple-bank/sqlc"
+	db "github.com/crackz/simple-bank/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
 
 type createAccountDto struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EURO"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -45,7 +45,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 	var params getAccountParam
 
 	if err := ctx.ShouldBindUri(&params); err != nil {
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
@@ -66,7 +66,7 @@ func (server *Server) getAccounts(ctx *gin.Context) {
 	var query getAccountsQuery
 
 	if err := ctx.ShouldBindQuery(&query); err != nil {
-		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 

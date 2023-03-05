@@ -8,9 +8,6 @@ import (
 
 const (
 	alphabet = "abcdefghijklmnopqrstuvwxyz"
-	USD      = "USD"
-	EURO     = "EURO"
-	CAD      = "CAD"
 )
 
 func init() {

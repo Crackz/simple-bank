@@ -1,8 +1,12 @@
 {
     "cSpell.words": [
+        "crackz",
+        "gomock",
         "mapstructure",
         "migrateup",
+        "mockdb",
         "oneof",
-        "sqlc"
+        "sqlc",
+        "stretchr"
     ]
 }

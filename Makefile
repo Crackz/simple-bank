@@ -16,6 +16,7 @@ test:
 	go test --v --cover ./...
 server:
 	go run main.go
+mock:
+	mockgen --package mockdb --destination db/mock/store.go github.com/crackz/simple-bank/db/sqlc Store
 
-
-.PHONY: test sqlc server
+.PHONY: test sqlc server mock

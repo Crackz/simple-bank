@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/crackz/simple-bank/api"
-	db "github.com/crackz/simple-bank/sqlc"
+	db "github.com/crackz/simple-bank/db/sqlc"
 	"github.com/crackz/simple-bank/util"
 	_ "github.com/lib/pq"
 )

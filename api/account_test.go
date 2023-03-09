@@ -19,7 +19,7 @@ import (
 )
 
 func TestGetAccountAPI(t *testing.T) {
-	inMemoryAccount := randomInMemoryAccountAccount()
+	inMemoryAccount := randomInMemoryAccount()
 
 	testCases := []struct {
 		name          string
@@ -107,7 +107,7 @@ func TestGetAccountAPI(t *testing.T) {
 }
 
 func TestCreateAccountAPI(t *testing.T) {
-	inMemoryAccount := randomInMemoryAccountAccount()
+	inMemoryAccount := randomInMemoryAccount()
 
 	testCases := []struct {
 		name          string
@@ -255,7 +255,7 @@ func TestCreateAccountAPI(t *testing.T) {
 
 }
 
-func randomInMemoryAccountAccount() db.Account {
+func randomInMemoryAccount() db.Account {
 	return db.Account{
 		ID:       util.RandomInt(1, 1000),
 		Owner:    util.RandString(6),

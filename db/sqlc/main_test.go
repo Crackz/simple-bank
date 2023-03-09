@@ -14,9 +14,9 @@ var testQueries *Queries
 var testDb *sql.DB
 
 func TestMain(m *testing.M) {
-	config, err := util.LoadConfig("../")
+	config, err := util.LoadConfig("../../")
 	if err != nil {
-		log.Fatal("Couldn't load config")
+		log.Fatal("Couldn't load config: ", err)
 	}
 
 	testDb, err = sql.Open(config.DBDriver, config.DBSource)

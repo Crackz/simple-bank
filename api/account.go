@@ -3,10 +3,12 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 
 	db "github.com/crackz/simple-bank/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 type createAccountDto struct {
@@ -30,6 +32,17 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch pgErr.Code.Name() {
+			case "foreign_key_violation":
+				ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("you should create an account first")))
+				return
+			case "unique_violation":
+				foundAccountWithCurrencyErrMsg := fmt.Sprintf("you have already opened an account with %s currency", arg.Currency)
+				ctx.JSON(http.StatusBadRequest, errorResponse(errors.New(foundAccountWithCurrencyErrMsg)))
+				return
+			}
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

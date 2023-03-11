@@ -7,12 +7,12 @@ import (
 	"net/http"
 
 	db "github.com/crackz/simple-bank/db/sqlc"
+	"github.com/crackz/simple-bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
 
 type createAccountDto struct {
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,currency"`
 }
 
@@ -24,8 +24,9 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateAccountParams{
-		Owner:    createDto.Owner,
+		Owner:    authPayload.Username,
 		Currency: createDto.Currency,
 		Balance:  0,
 	}
@@ -64,6 +65,13 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 	account, err := server.checkAccountExist(ctx, params.AccountID)
 	if err != nil {
+		ctx.JSON(http.StatusNotFound, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("you are not allowed to access this account")))
 		return
 	}
 
@@ -90,7 +98,10 @@ func (server *Server) getAccounts(ctx *gin.Context) {
 		query.Limit = 1
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.ListAccountsParams{
+		Owner:  authPayload.Username,
 		Limit:  query.Limit,
 		Offset: (query.Page - 1) * query.Limit,
 	}
@@ -121,7 +132,6 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, errorResponse(err))
 		return
 	}
-
 	if err := ctx.ShouldBindJSON(&dto); err != nil {
 		ctx.JSON(http.StatusUnprocessableEntity, errorResponse(err))
 		return
@@ -129,6 +139,12 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 
 	foundAccount, err := server.checkAccountExist(ctx, params.AccountID)
 	if err != nil {
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != foundAccount.Owner {
+		ctx.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("account id: %v doesn't belong to current user", params.AccountID)))
 		return
 	}
 
@@ -161,6 +177,12 @@ func (server *Server) deleteAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != foundAccount.Owner {
+		ctx.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("account id: %v doesn't belong to current user", params.AccountID)))
+		return
+	}
+
 	err = server.store.DeleteAccount(ctx, foundAccount.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -181,4 +203,12 @@ func (server *Server) checkAccountExist(ctx *gin.Context, id int64) (account db.
 	}
 
 	return
+}
+
+func isValidAccountCurrency(account db.Account, currency string) bool {
+	return account.Currency == currency
+}
+
+func isOwner(account db.Account, owner string) bool {
+	return account.Owner == owner
 }

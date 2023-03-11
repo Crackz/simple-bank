@@ -1,16 +1,19 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	db "github.com/crackz/simple-bank/db/sqlc"
+	"github.com/crackz/simple-bank/token"
 	"github.com/gin-gonic/gin"
 )
 
 type createTransferDto struct {
-	ToAccountID   int64 `json:"toAccountID" binding:"required,min=1"`
-	FromAccountID int64 `json:"fromAccountID" binding:"required,min=1"`
-	Amount        int64 `json:"amount" binding:"required,min=0,gt=0"`
+	ToAccountID   int64  `json:"toAccountID" binding:"required,min=1"`
+	FromAccountID int64  `json:"fromAccountID" binding:"required,min=1"`
+	Amount        int64  `json:"amount" binding:"required,min=0,gt=0"`
+	Currency      string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createTransfer(ctx *gin.Context) {
@@ -25,12 +28,27 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
+
 	toAccount, err := server.checkAccountExist(ctx, createDto.ToAccountID)
 	if err != nil {
 		return
 	}
 
-	// TODO: Convert Amount From FromAccount's Currency To ToAccount's Currency
+	if !isValidAccountCurrency(fromAccount, createDto.Currency) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("from account doesn't support currency: %v", fromAccount.Currency)))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if !isOwner(fromAccount, authPayload.Username) {
+		ctx.JSON(http.StatusForbidden, errorResponse(fmt.Errorf("account id: %v doesn't belong to current user", createDto.FromAccountID)))
+		return
+	}
+
+	if !isValidAccountCurrency(toAccount, createDto.Currency) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("to account doesn't support currency: %v", fromAccount.Currency)))
+		return
+	}
 
 	arg := db.TransferTxParams{
 		FromAccountID: fromAccount.ID,

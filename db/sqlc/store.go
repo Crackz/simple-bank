@@ -128,7 +128,5 @@ func moveMoney(
 		Amount: amount2,
 	})
 
-	fmt.Println("BEFORE: ", account1.Balance, account2.Balance)
-
 	return
 }

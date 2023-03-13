@@ -7,7 +7,11 @@
         "migrateup",
         "mockdb",
         "oneof",
+        "simplebank",
         "sqlc",
         "stretchr"
-    ]
+    ],
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file:///home/maz/SideProjects/simple-bank/.github/workflows/deploy.yml"
+    }
 }

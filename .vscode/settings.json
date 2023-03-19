@@ -9,7 +9,8 @@
         "oneof",
         "simplebank",
         "sqlc",
-        "stretchr"
+        "stretchr",
+        "userarn"
     ],
     "yaml.schemas": {
         "https://json.schemastore.org/github-workflow.json": "file:///home/maz/SideProjects/simple-bank/.github/workflows/deploy.yml"
